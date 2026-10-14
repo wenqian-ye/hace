@@ -65,7 +65,7 @@
     <div class="stats">
       <div class="stat"><b>15/15</b>recommendation settings where HACE achieves the highest mean HR@10</div>
       <div class="stat"><b>+0.0460 <small>vs +0.0040</small></b>NDCG gain over Base on CAFA with <span class="nowrap">ESM-2</span>, compared with at most 0.0040 for existing evolution methods</div>
-      <div class="stat"><b>0.6541 <small>vs 0.6513</small></b>NDCG of HACE on WBM with CHGNet, exceeding the strongest competing mean</div>
+      <div class="stat"><b>+12.1%</b>average relative HR@10 gain over Base across the 15 recommendation settings</div>
     </div>
   </div>
 </header>
@@ -198,14 +198,14 @@
 <section id="dynamics">
   <div class="col">
     <p class="eyebrow">Evolution dynamics</p>
-    <h2>HACE reaches the highest score in all three recorded trajectories</h2>
+    <h2>HACE reaches the highest selection score in all three recorded trajectories</h2>
     <p>In HACE, each retained specialist and harness defines the starting point for the next round. The trajectories show when higher scoring configurations are found during search.</p>
   </div>
   <div class="wide">
     <figure class="card" id="fig-evo">
       <div class="viz" id="viz-evo" aria-label="Best recorded selection score per round for each method in three domains"></div>
-      <figcaption><b>Evolution dynamics of three domains.</b> Best recorded scores, measured by HR@10, Recall@10 and mean NDCG@3 and
-        NDCG@5. Dashed lines mark the frozen specialist.</figcaption>
+      <figcaption><b>Evolution dynamics of three domains.</b> Best recorded selection scores, measured by HR@10, Recall@10 and mean
+        NDCG@3 and NDCG@5. Dashed lines mark the frozen specialist. These trajectories describe the scores observed during selection, while the main tables report aggregate evaluation results.</figcaption>
     </figure>
   </div>
 </section>
@@ -222,7 +222,7 @@
     <figure class="card" id="fig-timeline">
       <div class="viz" id="viz-timeline" aria-label="Recorded selection scores and their running maxima from one run in each domain, with selected updates"></div>
       <figcaption><b>Recorded selection scores and their running maxima from one run in each domain.</b> Filled points mark
-        selected updates.</figcaption>
+        selected updates. These trajectories describe the scores observed during selection, while the main tables report aggregate evaluation results.</figcaption>
     </figure>
   </div>
   <div class="col">
