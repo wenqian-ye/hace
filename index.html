@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heterogeneous Agentic Coevolution (HACE)</title>
+<meta name="description" content="HACE is a framework that jointly evolves specialized foundation models and LLM agents through reciprocal learning, evaluated on recommendation systems, protein function prediction and crystal stability prediction.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Heterogeneous Agentic Coevolution">
+<meta property="og:description" content="A framework that jointly evolves specialized foundation models and LLM agents through reciprocal learning. HACE outperforms the evaluated self-improving methods on the primary task metrics across recommendation systems, protein function prediction and crystal stability prediction.">
+<meta property="og:image" content="https://wenqian-ye.github.io/hace/assets/img/preview.png">
+<meta property="og:url" content="https://wenqian-ye.github.io/hace/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://wenqian-ye.github.io/hace/assets/img/preview.png">
+<link rel="icon" type="image/png" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="wide">
+    <img class="logo" src="assets/img/logo.png" alt="" width="84" height="80">
+    <h1><span class="acc">H</span>eterogeneous <span class="acc">A</span>gentic <span class="acc">C</span>o<span class="acc">e</span>volution</h1>
+    <p class="subtitle">Jointly evolving specialized foundation models and LLM agents through reciprocal learning</p>
+    <div class="authors">
+      <span class="nowrap">Wenqian Ye<sup>1,2,*</sup></span>
+      <span class="nowrap">Ziwei Guan<sup>1</sup></span>
+      <span class="nowrap">Zi Yang<sup>1</sup></span>
+      <span class="nowrap">Shivani Modi<sup>1</sup></span>
+      <span class="nowrap">Cici Cong Wu<sup>1</sup></span>
+      <span class="nowrap">Yunlong He<sup>1</sup></span>
+      <span class="nowrap">Yuxin Chen<sup>1</sup></span>
+      <span class="nowrap">Zhengyu Zhang<sup>1</sup></span>
+      <span class="nowrap">Liang Luo<sup>1</sup></span>
+      <span class="nowrap">Venkatesh Ranganathan<sup>1</sup></span>
+      <span class="nowrap">Jianhui Sun<sup>1</sup></span>
+      <span class="nowrap">Yantao Yao<sup>1</sup></span>
+      <span class="nowrap">Wenlin Chen<sup>1</sup></span>
+      <span class="nowrap">Buyun Zhang<sup>1,†</sup></span>
+      <span class="nowrap">Ellie Dingqiao Wen<sup>1,†</sup></span>
+      <span class="nowrap">Henry Kautz<sup>2,†</sup></span>
+      <span class="nowrap">Aidong Zhang<sup>2,†</sup></span>
+    </div>
+    <div class="affil">
+      <span class="nowrap"><sup>1</sup>Meta AI</span>
+      <span class="nowrap"><sup>2</sup>University of Virginia</span>
+      <span class="nowrap"><sup>*</sup>Work done at Meta</span>
+      <span class="nowrap"><sup>†</sup>Joint supervision</span>
+    </div>
+    <div class="links">
+      <a class="btn" href="https://arxiv.org/abs/2610.16078"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.5L12.5 4.8v9.4H4z"/><path d="M9.3 1.8v3.2h3.2M6 8h4.5M6 10.6h4.5"/></svg>Paper</a>
+      <a class="btn" href="#method"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.6"/><path d="M8 4.6v3.6l2.4 1.5"/></svg>How it works</a>
+      <a class="btn" href="#results"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 13.5h11M4.5 11V7.5M8 11V4M11.5 11V6"/></svg>Results</a>
+      <a class="btn" href="#cite"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4h10M3 8h10M3 12h6"/></svg>BibTeX</a>
+    </div>
+    <div class="tldr">
+      <b class="k">TL;DR</b>
+      Many domain-specific applications rely on specialized foundation models that possess strong domain
+      expertise but remain dependent on human-designed improvements. HACE jointly evolves specialized foundation
+      models and LLM agents through reciprocal learning, and employs evolutionary search to optimize their
+      interaction harness. HACE outperforms the evaluated self-improving methods on the primary task metrics
+      across recommendation systems, protein function prediction and crystal stability prediction.
+    </div>
+    <div class="stats">
+      <div class="stat"><b>15/15</b>recommendation settings where HACE achieves the highest mean HR@10</div>
+      <div class="stat"><b>+0.0460 <small>vs +0.0040</small></b>NDCG gain over Base on CAFA with <span class="nowrap">ESM-2</span>, compared with at most 0.0040 for existing evolution methods</div>
+      <div class="stat"><b>0.6541 <small>vs 0.6513</small></b>NDCG of HACE on WBM with CHGNet, exceeding the strongest competing mean</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="intro">
+  <div class="col">
+    <p class="eyebrow">Motivation</p>
+    <h2>Specialized foundation models remain dependent on <span class="nowrap">human-designed</span> improvements</h2>
+    <p>Specialized foundation models learn reusable domain knowledge through large-scale pretraining and acquire
+      domain expertise that often exceeds that of general LLM agents. Yet they still cannot self-evolve like LLM
+      agents. Once supervised training reaches convergence, researchers have to manually identify useful designs
+      to improve the specialized foundation model.</p>
+  </div>
+  <div class="wide">
+    <figure class="card" id="fig-overview">
+      <div class="viz" id="viz-fig1" role="img" aria-label="Human-directed optimization compared with heterogeneous agentic coevolution"></div>
+      <figcaption><b>From human-directed optimization to heterogeneous agentic coevolution.</b> HACE brings together
+        specialized foundation models and LLM agents into a shared learning process, where each helps determine how
+        the other improves.</figcaption>
+    </figure>
+  </div>
+  <div class="col">
+    <p>Most self-evolving systems still rely on proprietary LLMs whose parameters remain fixed while agent code
+      and interaction harnesses evolve. For specialized foundation models, the challenge is for the LLM agent to
+      keep improving the specialized model as the specialized model advances. An intervention that improves the
+      initial model can become redundant after further training.</p>
+    <p class="insight">Continued progress requires the agent to learn continually with the
+      model when it improves. We refer to this mechanism as reciprocal learning.</p>
+    <p>We propose Heterogeneous Agentic Coevolution (HACE), which coevolves a specialized foundation model
+      (the specialist) with a heterogeneous LLM agent that learns to guide the coevolution. Agent learning is
+      guided by verified gains over the current specialist. The agent's exploration, in turn, guides the selection
+      of experiences for subsequent specialist training. An evolutionary interaction harness governs information
+      exchange and training experience selection.</p>
+  </div>
+</section>
+
+<section id="method">
+  <div class="col">
+    <p class="eyebrow">Method</p>
+    <h2>An evolving harness connects specialist adaptation, joint selection, and agent learning</h2>
+    <p>Let <i>S</i> denote the specialist, <i>A</i> the agent, and <i>H</i> the harness. Agent exploration selects
+      specialist training experience. Joint validation retains the specialist and harness, after which fresh verified responses train the agent.</p>
+  </div>
+  <div class="wide">
+    <figure class="card loop" id="fig-loop">
+      <div class="viz" id="viz-loop" role="img" aria-label="The four steps of a HACE round: harness optimization, specialist optimization, joint selection and agent optimization"></div>
+      <figcaption class="swipe-hint" aria-hidden="true">Scroll sideways to see the whole round</figcaption>
+    </figure>
+  </div>
+  <div class="col">
+    <ol class="steps">
+      <li class="step step-harness"><h3>Harness optimization</h3>
+        <p>We propose a harness <i>H</i>&prime; by modifying a parent from an archive of accepted harnesses. Its fields control the task information and specialist context shown to the agent,
+          how responses are interpreted, and which examples train each learner.</p></li>
+      <li class="step step-specialist"><h3>Specialist optimization</h3>
+        <p>Under <i>H</i>&prime;, the agent receives a prompt constructed from a training input and the predictions of
+          <i>S</i>, without access to its label. A fixed optimization budget produces <i>S</i>&prime; using the
+          original supervised task loss. Agent exploration determines where to train, while task labels determine
+          what the specialist learns.</p></li>
+      <li class="step step-selection"><h3>Joint selection</h3>
+        <p>With <i>A</i> fixed, we compare the proposed pair (<i>S</i>&prime;, <i>H</i>&prime;) and the current pair on the same
+          validation batch. Joint prediction ranks candidates by <i>s</i>(<i>c</i>) + &lambda;<i>a</i>(<i>c</i>),
+          with &lambda; fit from {0, 0.25, 0.5, 1, 2, 4, 8} on one fold and evaluated on the other. The proposal is accepted when &Delta;<i>J</i> &gt; 0. Otherwise,
+          we restore the specialist parameters, optimizer, calibration, and harness.</p></li>
+      <li class="step step-agent"><h3>Agent optimization</h3>
+        <p>We collect fresh responses
+          with <i>A</i> under the retained pair. With <i>q</i><sup>A</sup> and <i>q</i><sup>S</sup> the respective task qualities, the
+          response contribution is <i>r</i> = <i>q</i><sup>A</sup> &minus; <i>q</i><sup>S</sup>. We keep the original response with the
+          largest positive contribution for each eligible instance, and the agent trains on these with on-policy
+          reinforced self-training.</p></li>
+    </ol>
+    <p>A specialist update can change which responses improve on its predictions, and a harness update can change
+      the information available to the agent. The agent's updated responses guide exploration in the next round.</p>
+  </div>
+</section>
+
+<section id="verification">
+  <div class="col">
+    <p class="eyebrow">Verification</p>
+    <h2>Agent learning is guided by verified gains over the current specialist</h2>
+    <p>We evaluate each response against the label using the same task constraints as the specialist. A response
+      passes verification when its prediction is valid, supervision is evaluable, and <i>r</i> &gt; 0. Sample a few
+      responses below to see which ones would be kept.</p>
+  </div>
+  <div class="wide">
+    <figure class="card" id="fig-verify">
+      <div class="viz" id="viz-verify" aria-label="Interactive illustration of response verification against the specialist ranking"></div>
+      <figcaption><b>Model-referenced contribution.</b> Verification on one instance, with contribution <i>r</i> = <i>q</i><sup>A</sup> &minus; <i>q</i><sup>S</sup>.
+        We keep the response with the largest positive contribution.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="results">
+  <div class="col">
+    <p class="eyebrow">Main results</p>
+    <h2>HACE enables specialists to continue improving beyond supervised convergence</h2>
+    <p>In each domain, we begin with specialists already trained to convergence. We compare against <span class="nowrap">ReST-EM</span>, <span class="nowrap">Meta-Harness</span>, OpenEvolve, DGM
+      and <span class="nowrap">TTT-Discover</span>. By default, we use <span class="nowrap">Gemma-4 E4B</span> as the LLM agent.</p>
+    <h3>Recommendation</h3>
+    <p>HACE achieves the highest mean HR@10 in all 15 settings. Relative gains over Base range from 2.9% to 18.5%,
+      averaging 12.1% across settings. On ML-1M, several evolution methods fall below the initial SASRec and HSTU models,
+      while HACE improves all three architectures.</p>
+  </div>
+  <div class="wide">
+    <figure class="card" id="fig-rec">
+      <div class="viz" id="viz-rec" aria-label="HR@10 of each method relative to Base across 15 recommendation settings"></div>
+      <figcaption><b>HACE achieves the highest mean HR@10 in all 15 settings.</b> Relative change from Base, means on three random seeds.
+        Tap or hover a point for the exact score.</figcaption>
+    </figure>
+  </div>
+  <div class="col">
+    <h3>Protein function prediction and material discovery</h3>
+    <p>On CAFA, HACE raises NDCG from 0.6285 to 0.6745 with ESM-2 and from 0.6241 to 0.6739 with ProtT5-XL. Existing
+      evolution methods improve over Base by at most 0.0040 and 0.0032, respectively. On WBM, all competing methods
+      improve NDCG over Base, from 0.6388 to at least 0.6474. HACE reaches 0.6541, exceeding the strongest competing
+      mean by 0.0028.</p>
+  </div>
+  <div class="wide">
+    <figure class="card" id="fig-sci">
+      <div class="viz" id="viz-sci" aria-label="Means with standard deviations per method on CAFA and WBM, with Base as a dashed line"></div>
+      <figcaption><b>Main results on protein function prediction (CAFA) and material discovery (WBM).</b> Means with
+        standard deviations on three random seeds. The dashed line marks Base.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="dynamics">
+  <div class="col">
+    <p class="eyebrow">Evolution dynamics</p>
+    <h2>HACE reaches the highest score in all three recorded trajectories</h2>
+    <p>In HACE, each retained specialist and harness defines the starting point for the next round. The trajectories show when higher scoring configurations are found during search.</p>
+  </div>
+  <div class="wide">
+    <figure class="card" id="fig-evo">
+      <div class="viz" id="viz-evo" aria-label="Best recorded selection score per round for each method in three domains"></div>
+      <figcaption><b>Evolution dynamics of three domains.</b> Best recorded scores, measured by HR@10, Recall@10 and mean NDCG@3 and
+        NDCG@5. Dashed lines mark the frozen specialist.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="harness-events">
+  <div class="col">
+    <p class="eyebrow">Case studies</p>
+    <h2>Illustrations on events during coevolution</h2>
+    <p>Recorded changes include removing genre metadata, targeting difficult training instances, and hiding
+      candidate ranks from the agent. These examples illustrate how the harness search changes both
+      the context used for prediction and the experience used for reciprocal learning.</p>
+  </div>
+  <div class="wide">
+    <figure class="card" id="fig-timeline">
+      <div class="viz" id="viz-timeline" aria-label="Recorded selection scores and their running maxima from one run in each domain, with selected updates"></div>
+      <figcaption><b>Recorded selection scores and their running maxima from one run in each domain.</b> Filled points mark
+        selected updates.</figcaption>
+    </figure>
+  </div>
+  <div class="col">
+    <h3>Case studies on three domains</h3>
+    <p>HACE recovers a matching product variant,
+      places two relevant protein terms in the top five, and brings a second stable phase into the top three.</p>
+  </div>
+  <div class="wide">
+    <figure class="card" id="fig-cases">
+      <div class="viz" id="viz-cases" aria-label="Case studies comparing specialist and joint predictions in three domains"></div>
+      <figcaption><b>Specialist and combined predictions on three domains.</b>
+        Drag the protein and the
+        crystal to rotate them. Protein structure from AlphaFold DB model AF-P00157-F1 (CC BY 4.0).</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="ablation">
+  <div class="col">
+    <p class="eyebrow">Ablation studies</p>
+    <h2>All designed components contribute positively to the framework</h2>
+    <p>Removing agent optimization causes the
+      largest drop on Toys, from 0.0706 to 0.0622. On CAFA, removing harness or specialist optimization reduces NDCG
+      by 0.0438 and 0.0435, respectively. Removing agent-guided experience lowers performance even when specialist
+      optimization remains enabled, by 0.0044 on Toys, 0.0170 on CAFA, and 0.0034 on WBM. Removing
+      joint selection also reduces all three scores.</p>
+  </div>
+  <div class="wide">
+    <figure class="card" id="fig-ablation">
+      <div class="viz" id="viz-ablation" aria-label="Leave-one-out ablation in three domains"></div>
+      <figcaption><b>Ablation studies in three domains.</b> HR@10 for Toys/SASRec and mean NDCG for CAFA/ESM-2 650M and
+        WBM/CHGNet.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="harness">
+  <div class="col">
+    <p class="eyebrow">Harness Engineering</p>
+    <h2>The harness governs information exchange and training experience selection</h2>
+    <p>Harness fields control the task information and specialist context shown to the agent, how responses are
+      interpreted, and which examples train each learner.</p>
+  </div>
+  <div class="wide">
+    <figure class="card" id="fig-harness">
+      <div class="viz" id="viz-harness" aria-label="Harness fields and prompt templates for each domain"></div>
+    </figure>
+  </div>
+</section>
+
+
+<section id="cite">
+  <div class="col">
+    <h2>Citation</h2>
+    <div class="bib">
+      <button class="copy" type="button" data-copy="#bibtex">Copy</button>
+<pre id="bibtex">@article{ye2026heterogeneous,
+  title   = {Heterogeneous Agentic Coevolution},
+  author  = {Ye, Wenqian and Guan, Ziwei and Yang, Zi and
+             Modi, Shivani and Wu, Cici Cong and He, Yunlong and
+             Chen, Yuxin and Zhang, Zhengyu and Luo, Liang and
+             Ranganathan, Venkatesh and Sun, Jianhui and
+             Yao, Yantao and Chen, Wenlin and Zhang, Buyun and
+             Wen, Ellie Dingqiao and Kautz, Henry and
+             Zhang, Aidong},
+  journal = {arXiv preprint arXiv:2610.16078},
+  year    = {2026}
+}</pre>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="col">
+    <p>Correspondence: Wenqian Ye (<a href="mailto:wenqian@virginia.edu">wenqian@virginia.edu</a>) and Buyun Zhang
+      (<a href="mailto:buyunz@meta.com">buyunz@meta.com</a>).</p>
+    <p class="muted">Meta AI &middot; University of Virginia</p>
+  </div>
+</footer>
+
+<script src="assets/data/data.js"></script>
+<script src="assets/js/hc.js"></script>
+<script src="assets/js/components/fig1.js"></script>
+<script src="assets/js/components/loop.js"></script>
+<script src="assets/js/components/verify.js"></script>
+<script src="assets/js/components/rec.js"></script>
+<script src="assets/js/components/sci.js"></script>
+<script src="assets/js/components/evo.js"></script>
+<script src="assets/js/components/timeline.js"></script>
+<script src="assets/js/components/cases.js"></script>
+<script src="assets/js/components/ablation.js"></script>
+<script src="assets/js/components/harness.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
